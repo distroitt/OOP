@@ -131,55 +131,58 @@ class ConsoleApp:
         while True:
             manager = self.system.get_user(user_id)
             print(f"\nМенеджер: {manager.username}")
-            print("1. Неподтвержденные клиенты")
-            print("2. Подтвердить клиента")
-            print("3. Предприятия и сотрудники")
-            print("4. Добавить клиента в предприятие")
-            print("5. Удалить клиента из предприятия")
-            print("6. Заявки на зарплатный проект")
-            print("7. Одобрить заявку")
-            print("8. Заблокировать/разблокировать счет")
-            print("9. Заблокировать/разблокировать вклад")
-            print("10. История счета клиента")
+            print("1. Все клиенты")
+            print("2. Неподтвержденные клиенты")
+            print("3. Подтвердить клиента")
+            print("4. Предприятия и сотрудники")
+            print("5. Добавить клиента в предприятие")
+            print("6. Удалить клиента из предприятия")
+            print("7. Заявки на зарплатный проект")
+            print("8. Одобрить заявку")
+            print("9. Заблокировать/разблокировать счет")
+            print("10. Заблокировать/разблокировать вклад")
+            print("11. История счета клиента")
             print("0. Выйти")
             choice = input("Выберите действие: ").strip()
 
             try:
                 if choice == "1":
-                    self._print_pending_clients()
+                    self._print_all_clients()
                 elif choice == "2":
+                    self._print_pending_clients()
+                elif choice == "3":
                     client_id = self._input_int("ID клиента: ")
                     self.system.confirm_client(user_id, client_id)
                     print("Клиент подтвержден.")
-                elif choice == "3":
-                    self._print_enterprises_with_employees()
                 elif choice == "4":
+                    self._print_enterprises_with_employees()
+                elif choice == "5":
                     client_id = self._input_int("ID клиента: ")
                     enterprise_id = self._input_int("ID предприятия: ")
                     self.system.add_client_to_enterprise(user_id, client_id, enterprise_id)
                     print("Клиент добавлен в предприятие.")
-                elif choice == "5":
+                elif choice == "6":
                     client_id = self._input_int("ID клиента: ")
                     enterprise_id = self._input_int("ID предприятия: ")
                     self.system.remove_client_from_enterprise(user_id, client_id, enterprise_id)
                     print("Клиент удален из предприятия.")
-                elif choice == "6":
-                    self._print_pending_applications()
                 elif choice == "7":
+                    self._print_pending_applications()
+                elif choice == "8":
                     application_id = self._input_int("ID заявки: ")
                     self.system.approve_salary_application(user_id, application_id)
                     print("Заявка одобрена.")
-                elif choice == "8":
+                elif choice == "9":
                     account_id = self._input_int("ID счета: ")
                     blocked = self._input_blocked_flag()
                     self.system.set_account_blocked(user_id, account_id, blocked)
                     print("Состояние счета обновлено.")
-                elif choice == "9":
+                elif choice == "10":
                     deposit_id = self._input_int("ID вклада: ")
                     blocked = self._input_blocked_flag()
                     self.system.set_deposit_blocked(user_id, deposit_id, blocked)
                     print("Состояние вклада обновлено.")
-                elif choice == "10":
+                elif choice == "11":
                     self._print_account_history()
                 elif choice == "0":
                     return
@@ -329,6 +332,22 @@ class ConsoleApp:
             return
         for client in clients:
             print(f"{client.id}. {client.full_name} ({client.username})")
+
+    def _print_all_clients(self) -> None:
+        clients = self.system.list_clients()
+        print("\nКлиенты:")
+        if not clients:
+            print("Клиенты отсутствуют.")
+            return
+        for client in clients:
+            enterprises = ", ".join(str(enterprise_id) for enterprise_id in client.enterprise_ids) or "-"
+            print(
+                f"{client.id}. {client.full_name} ({client.username}) | "
+                f"статус: {client.registration_status.value} | "
+                f"счетов: {len(client.account_ids)} | "
+                f"вкладов: {len(client.deposit_ids)} | "
+                f"предприятия: {enterprises}"
+            )
 
     def _print_pending_applications(self) -> None:
         applications = self.system.list_pending_salary_applications()
